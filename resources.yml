@@ -1,0 +1,67 @@
+# Book table
+UserTable:
+  Type: "AWS::DynamoDB::Table"
+  Properties: 
+    AttributeDefinitions: 
+      - AttributeName: "Pk"
+        AttributeType: "S"
+      - AttributeName: "Sk"
+        AttributeType: "S"
+    BillingMode: "PAY_PER_REQUEST"
+    KeySchema: 
+      - AttributeName: Pk
+        KeyType: "HASH"
+      - AttributeName: Sk
+        KeyType: "RANGE"
+    Tags: 
+      - Key: "Name"
+        Value: "user-table"
+    TableName: ${self:custom.settings.USERS_DYNAMODB_TABLE}
+
+# User Pool configurations
+cognitoUserPool:
+  Type: AWS::Cognito::UserPool
+  Properties: 
+    UsernameAttributes:
+      - email
+    UserPoolName: lafete-user-pool-${self:custom.stage} 
+    Policies:
+      PasswordPolicy:
+        MinimumLength: 8
+        RequireLowercase: False
+        RequireNumbers: True
+        RequireSymbols: False
+        RequireUppercase: False
+
+
+# User Pool client 
+cognitoUserPoolClient:
+  Type: AWS::Cognito::UserPoolClient
+  Properties:
+    ClientName: Web
+    UserPoolId: !Ref cognitoUserPool
+
+# User Groups 
+cognitoUserGroup:
+  Type: AWS::Cognito::UserPoolGroup
+  Properties: 
+    Description: All users other then service providers all are belong to this group
+    GroupName: Users 
+    Precedence: 1
+    RoleArn: !GetAtt cognitoUserIAMRole.Arn
+    UserPoolId: !Ref cognitoUserPool
+
+cognitoUserIAMRole:
+  Type: AWS::IAM::Role
+  Properties: 
+    AssumeRolePolicyDocument: 
+      Version: "2012-10-17"
+      Statement: 
+        - Effect: "Allow"
+          Principal:
+            Federated: 
+              - "cognito-identity.amazonaws.com"
+          Action:
+            - "sts:AssumeRole"
+    Description: "IAM role for lafete user"
+    RoleName: "lafete-user-role"

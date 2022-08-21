@@ -1,0 +1,78 @@
+# Welcome to Serverless!
+#
+# This file is the main config file for your service.
+# It's very minimal at this point and uses default values.
+# You can always add more config options for more control.
+# We've included some commented out config examples here.
+# Just uncomment any of them to get that config option.
+#
+# For full config options, check the docs:
+#    docs.serverless.com
+#
+# Happy Coding!
+
+service: lafete
+# app and org for use with dashboard.serverless.com
+#app: your-app-name
+#org: your-org-name
+
+# You can pin your service to only deploy with a specific Serverless version
+# Check out our docs for more details
+frameworkVersion: '3'
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: ${opt:stage, self:custom.stage}
+  region: us-east-1
+  environment:
+    USERS_TABLE: ${self:custom.settings.USERS_DYNAMODB_TABLE}
+    USER_POOL_ID: !Ref cognitoUserPool
+    USER_POOL_CLIENT_ID: !Ref cognitoUserPoolClient
+    USER_POOL_GROUP: !Ref cognitoUserGroup
+
+plugins:
+  - serverless-iam-roles-per-function
+  - serverless-python-requirements
+
+custom:
+#  splitStacks:
+#    perFunction: true
+  # apigwBinary:
+  #   types: #list of mime-types
+  #     - 'image/jpeg'
+  #     - 'image/png'
+  pythonRequirements:
+     layer: true
+  stage: ${opt:stage, self:provider.stage}
+  # UploadBucket: eshaafi-image-upload-bucket-${self:provider.region}-${self:custom.stage}
+  settings:
+    USERS_DYNAMODB_TABLE: Users-${self:custom.stage}
+
+    dev:
+      STAGE: ${self:custom.stage}
+      ENV: 'develop'
+      region: us-east-1
+    stage:
+      STAGE: ${self:custom.stage}
+      ENV: 'stage'
+      region: us-east-1
+
+package:
+  individually: true
+  patterns:
+    - '!./**'
+    - '!node_modules/**'
+    - ./src/common/**
+
+functions:
+  ${file(functions.yml)}
+
+# you can add CloudFormation resource templates here
+resources:
+ Resources:
+   ${file(resources.yml)}
+#  Outputs:
+#     NewOutput:
+#       Description: "Description for the output"
+#       Value: "Some output value"
