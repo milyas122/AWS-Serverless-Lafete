@@ -1,5 +1,4 @@
 import json
-from multiprocessing.sharedctypes import Value
 import boto3
 import os
 from botocore.exceptions import ClientError

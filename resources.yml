@@ -22,9 +22,13 @@ UserTable:
 cognitoUserPool:
   Type: AWS::Cognito::UserPool
   Properties: 
+    UserPoolName: lafete-user-pool-${self:custom.stage} 
     UsernameAttributes:
       - email
-    UserPoolName: lafete-user-pool-${self:custom.stage} 
+    AutoVerifiedAttributes:
+      - email
+    UsernameConfiguration:
+      CaseSensitive: False
     Policies:
       PasswordPolicy:
         MinimumLength: 8
@@ -40,6 +44,9 @@ cognitoUserPoolClient:
   Properties:
     ClientName: Web
     UserPoolId: !Ref cognitoUserPool
+    ExplicitAuthFlows:
+      - ALLOW_USER_PASSWORD_AUTH
+      - ALLOW_REFRESH_TOKEN_AUTH
 
 # User Groups 
 cognitoUserGroup:
