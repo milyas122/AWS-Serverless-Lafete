@@ -4,7 +4,7 @@ signup:
     - Ref: PythonRequirementsLambdaLayer
   package:
     patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
-      - ./src/api/auth/**
+      - ./src/api/auth/signup.py
   iamRoleStatementsName: signup-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
   iamRoleStatements:
     - Effect: "Allow"
@@ -12,16 +12,62 @@ signup:
         - dynamodb:PutItem
       Resource:
         - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.USERS_DYNAMODB_TABLE}
-    
+
     - Effect: "Allow"
       Action:
         - cognito-idp:AdminConfirmSignUp
         - cognito-idp:AdminAddUserToGroup
-        - cognito-idp:SignUp
+        - cognito-idp:AdminUpdateUserAttributes
       Resource:
         - !GetAtt cognitoUserPool.Arn
-  
+
   events:
     - http:
         path: auth/signup
         method: post
+        cors: true
+
+login:
+  handler: src/api/auth/login.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/auth/login.py
+  iamRoleStatementsName: login-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+
+  events:
+    - http:
+        path: auth/login
+        method: post
+        cors: true
+
+# Service Provider Profile
+completeProfileServiceProvider:
+  handler: src/api/service_provider/complete_profile.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/service_provider/complete_profile.py
+      - ./src/validation/complete_profile.py
+  iamRoleStatementsName: completeProfileServiceProvider-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:DeleteItem
+      Resource:
+        - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.USERS_DYNAMODB_TABLE}
+
+    - Effect: "Allow"
+      Action:
+        - cognito-idp:AdminUpdateUserAttributes
+      Resource:
+        - !GetAtt cognitoUserPool.Arn
+
+  events:
+    - http:
+        path: service_provider/profile
+        method: post
+        cors: true

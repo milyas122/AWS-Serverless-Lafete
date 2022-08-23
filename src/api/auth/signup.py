@@ -1,5 +1,4 @@
 import json
-from multiprocessing.sharedctypes import Value
 import boto3
 import os
 from botocore.exceptions import ClientError
@@ -20,7 +19,6 @@ def lambda_handler(event, context):
         password = data["password"]
         confirm_password = data["confirm_password"]
         name = data["name"]
-        is_service_provider = data["service_provider"]
 
         if password != confirm_password:
             raise ValueError("Password not matched enter again")
@@ -46,16 +44,23 @@ def lambda_handler(event, context):
             Username = email,
             GroupName = user_pool_group
         )
+
+        cognito_client.admin_update_user_attributes(
+            UserPoolId = pool_id,
+            Username = email,
+            UserAttributes = [
+                {
+                    'Name': 'custom:is_profile_completed',
+                    'Value': 'False'
+                }
+            ]
+        )
         current_date_time = utils.get_timeStamp()
         
-        sk = "Profile#User"
-        if is_service_provider:
-            sk = "Profile#ServiceProvider"
-       
         user_table.put_item(
             Item = {
                 "Pk": str(uuid),
-                "Sk": sk,
+                "Sk": "Profile#User",
                 "created_at": current_date_time,
                 "name": name
             }
