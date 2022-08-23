@@ -4,6 +4,11 @@ import os
 from botocore.exceptions import ClientError
 from ...common.response_builder import get_success_response, get_custom_error
 from ...common import utils
+from ...common.decorators import (
+    validate_body
+)
+from ...validation.complete_profile import CompleteProfileSchema
+
 
 
 cognito_client = boto3.client('cognito-idp') # add region 
@@ -13,38 +18,18 @@ dynamodb = boto3.resource('dynamodb')
 USER_TABLE = os.environ["USERS_TABLE"]
 user_table = dynamodb.Table(USER_TABLE)
 
+@validate_body(Schema=CompleteProfileSchema())
 def lambda_handler(event, context):
     data = json.loads(event["body"])
+
     try:
-        email = data["email"]
-        password = data["password"]
-        confirm_password = data["confirm_password"]
-        name = data["name"]
+        uuid = event["requestContext"]["authorizer"]['claims']['sub']
+        email = event["requestContext"]["authorizer"]['claims']['email']
+        business_name = data["business_name"]
+        phone_no = data["phone_no"]
+        landline_no = data.get("landline_no")
 
-        if password != confirm_password:
-            raise ValueError("Password not matched enter again")
-
-        client_id = os.environ["USER_POOL_CLIENT_ID"]
         pool_id = os.environ["USER_POOL_ID"]
-        user_pool_group = os.environ["USER_POOL_GROUP"]
-
-        uuid = cognito_client.sign_up(
-            ClientId = client_id,
-            Username = email,
-            Password = password,
-        )["UserSub"]
-
-        # Use Admin powers to confirm new user
-        cognito_client.admin_confirm_sign_up(
-            UserPoolId = pool_id,
-            Username = email
-        )
-
-        cognito_client.admin_add_user_to_group(
-            UserPoolId = pool_id,
-            Username = email,
-            GroupName = user_pool_group
-        )
 
         cognito_client.admin_update_user_attributes(
             UserPoolId = pool_id,
@@ -52,18 +37,35 @@ def lambda_handler(event, context):
             UserAttributes = [
                 {
                     'Name': 'custom:is_profile_completed',
-                    'Value': 'False'
+                    'Value': 'True'
                 }
             ]
         )
-        current_date_time = utils.get_timeStamp()
+        updated_at = utils.get_timeStamp()
+        user_object = user_table.delete_item(
+            Key = {
+                "Pk": str(uuid),
+                "Sk": "Profile#User"
+            },
+            ReturnValues = 'ALL_OLD'
+        )["Attributes"]
+
+        put_query = {
+                "Pk": str(uuid),
+                "Sk": "Profile#ServiceProvider",
+                "created_at": user_object["created_at"],
+                "updated_at": updated_at,
+                "name": user_object["name"],
+                "business_name": business_name,
+                "phone_no": phone_no
+        }
+
+        if landline_no:
+            put_query["landline_no"] = landline_no
         
         user_table.put_item(
             Item = {
-                "Pk": str(uuid),
-                "Sk": "Profile#User",
-                "created_at": current_date_time,
-                "name": name
+                **put_query
             }
         )
 
@@ -71,8 +73,8 @@ def lambda_handler(event, context):
             status_code=200, 
             message='Success',
             data={
-                "message": "User Signup Successfully", 
-                "data": {"Id": uuid}}
+                "message": "Profile Completed Successfully"
+            }
         )
     except ClientError as e:
         return get_custom_error(
@@ -82,11 +84,4 @@ def lambda_handler(event, context):
                 "message": e.response['Error']['Message']
             }
         )
-    except ValueError as e:
-        return get_custom_error(
-            status_code=400, 
-            message='Bad Request',
-            data={
-                "message": e
-            }
-        )
+    
