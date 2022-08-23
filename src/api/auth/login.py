@@ -30,13 +30,24 @@ def lambda_handler(event, context):
 
         
         result = initate_response["AuthenticationResult"]
+        custom_variables = cognito_client.get_user(
+                        AccessToken = result["AccessToken"]
+        )["UserAttributes"]
+
+        is_profile_completed = False
+        for item in custom_variables:
+            if item["Name"] == "custom:is_profile_completed":
+                is_profile_completed = json.loads(item["Value"].lower())
+                break
+            
         response = dict(
             AccessToken = result["AccessToken"],
             ExpiresIn = result["ExpiresIn"],
             RefreshToken = result["RefreshToken"],
-            IdToken = result["IdToken"]
+            IdToken = result["IdToken"],
+            is_profile_completed = is_profile_completed
         )
-        
+    
 
         return get_success_response(
             status_code=200, 
