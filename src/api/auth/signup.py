@@ -19,7 +19,6 @@ def lambda_handler(event, context):
         password = data["password"]
         confirm_password = data["confirm_password"]
         name = data["name"]
-        is_service_provider = data["service_provider"]
 
         if password != confirm_password:
             raise ValueError("Password not matched enter again")
@@ -47,14 +46,10 @@ def lambda_handler(event, context):
         )
         current_date_time = utils.get_timeStamp()
         
-        sk = "Profile#User"
-        if is_service_provider:
-            sk = "Profile#ServiceProvider"
-       
         user_table.put_item(
             Item = {
                 "Pk": str(uuid),
-                "Sk": sk,
+                "Sk": "Profile#User",
                 "created_at": current_date_time,
                 "name": name
             }
