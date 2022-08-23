@@ -44,6 +44,17 @@ def lambda_handler(event, context):
             Username = email,
             GroupName = user_pool_group
         )
+
+        cognito_client.admin_update_user_attributes(
+            UserPoolId = pool_id,
+            Username = email,
+            UserAttributes = [
+                {
+                    'Name': 'custom:is_profile_completed',
+                    'Value': 'False'
+                }
+            ]
+        )
         current_date_time = utils.get_timeStamp()
         
         user_table.put_item(

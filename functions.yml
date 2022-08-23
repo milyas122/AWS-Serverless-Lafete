@@ -17,6 +17,7 @@ signup:
       Action:
         - cognito-idp:AdminConfirmSignUp
         - cognito-idp:AdminAddUserToGroup
+        - cognito-idp:AdminUpdateUserAttributes
       Resource:
         - !GetAtt cognitoUserPool.Arn
 

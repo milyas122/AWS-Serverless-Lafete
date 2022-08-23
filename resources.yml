@@ -36,6 +36,11 @@ cognitoUserPool:
         RequireNumbers: True
         RequireSymbols: False
         RequireUppercase: False
+    Schema: 
+      - AttributeDataType: Boolean
+        Mutable: True
+        Name: is_profile_completed
+        Required: False 
 
 
 # User Pool client 
