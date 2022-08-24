@@ -71,3 +71,25 @@ completeProfileServiceProvider:
         path: service_provider/profile
         method: post
         cors: true
+# Services 
+addService:
+  handler: src/api/service_provider/services/add_service.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/service_provider/services/add_service.py
+      - ./src/validation/services.py
+  iamRoleStatementsName: addService-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:PutItem
+      Resource:
+        - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.SERVICES_DYNAMODB_TABLE}
+
+  events:
+    - http:
+        path: services
+        method: post
+        cors: true

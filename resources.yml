@@ -17,6 +17,25 @@ UserTable:
       - Key: "Name"
         Value: "user-table"
     TableName: ${self:custom.settings.USERS_DYNAMODB_TABLE}
+  
+ServiceTable:
+  Type: "AWS::DynamoDB::Table"
+  Properties: 
+    AttributeDefinitions: 
+      - AttributeName: "Pk"
+        AttributeType: "S"
+      - AttributeName: "Sk"
+        AttributeType: "S"
+    BillingMode: "PAY_PER_REQUEST"
+    KeySchema: 
+      - AttributeName: Pk
+        KeyType: "HASH"
+      - AttributeName: Sk
+        KeyType: "RANGE"
+    Tags: 
+      - Key: "Name"
+        Value: "service-table"
+    TableName: ${self:custom.settings.SERVICES_DYNAMODB_TABLE}
 
 # User Pool configurations
 cognitoUserPool:
