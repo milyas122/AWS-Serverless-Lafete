@@ -26,6 +26,17 @@ signup:
         path: auth/signup
         method: post
         cors: true
+          # origin: '*'
+          # headers:
+          #   - Content-Type
+          #   - X-Amz-Date
+          #   - Authorization
+          #   - X-Api-Key
+          #   - X-Amz-Security-Token
+          #   - X-Amz-User-Agent
+          #   - X-Amzn-Trace-Id
+          # allowCredentials: false
+
 
 login:
   handler: src/api/auth/login.lambda_handler
@@ -40,7 +51,17 @@ login:
     - http:
         path: auth/login
         method: post
-        cors: true
+        cors: True
+          # origin: '*'
+          # headers:
+          #   - Content-Type
+          #   - X-Amz-Date
+          #   - Authorization
+          #   - X-Api-Key
+          #   - X-Amz-Security-Token
+          #   - X-Amz-User-Agent
+          #   - X-Amzn-Trace-Id
+          # allowCredentials: false
 
 # Service Provider Profile
 completeProfileServiceProvider:
@@ -71,6 +92,16 @@ completeProfileServiceProvider:
         path: service_provider/profile
         method: post
         cors: true
+          # origin: '*'
+          # headers:
+          #   - Content-Type
+          #   - X-Amz-Date
+          #   - Authorization
+          #   - X-Api-Key
+          #   - X-Amz-Security-Token
+          #   - X-Amz-User-Agent
+          #   - X-Amzn-Trace-Id
+          # allowCredentials: false
 # Services 
 addService:
   handler: src/api/service_provider/services/add_service.lambda_handler
@@ -93,3 +124,13 @@ addService:
         path: services
         method: post
         cors: true
+          # origin: '*'
+          # headers:
+          #   - Content-Type
+          #   - X-Amz-Date
+          #   - Authorization
+          #   - X-Api-Key
+          #   - X-Amz-Security-Token
+          #   - X-Amz-User-Agent
+          #   - X-Amzn-Trace-Id
+          # allowCredentials: false
