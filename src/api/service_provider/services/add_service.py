@@ -34,10 +34,14 @@ def lambda_handler(event, context):
         # Data Validation
         if service_type == "Hall":
             data = HallSchema().load(data)
+            data["menus"] = []
+            data["add_ons"] = []
         elif service_type == "Morquee":
-            MorqueeSchema().load(data)
+            data = MorqueeSchema().load(data)
+            data["menus"] = []
+            data["add_ons"] = []
         elif service_type == "Farm House":
-            FarmHouseSchema().load(data)
+            data = FarmHouseSchema().load(data)
 
         # service_provider_id = event["requestContext"]["authorizer"]['claims']['sub']
         service_provider_id = "dc42638f-8a88-44a2-b124-96666ddbe6b2"

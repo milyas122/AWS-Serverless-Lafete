@@ -134,3 +134,26 @@ addService:
           #   - X-Amz-User-Agent
           #   - X-Amzn-Trace-Id
           # allowCredentials: false
+
+addMenuAddOns:
+  handler: src/api/service_provider/services/add_menu_addOns.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/service_provider/services/add_menu_addOns.py
+      - ./src/validation/menu.py
+  iamRoleStatementsName: addMenuAddOns-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:Query
+        - dynamodb:UpdateItem
+      Resource:
+        - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.SERVICES_DYNAMODB_TABLE}
+
+  events:
+    - http:
+        path: services/{service_id}/menu_addOns
+        method: post
+        cors: true
