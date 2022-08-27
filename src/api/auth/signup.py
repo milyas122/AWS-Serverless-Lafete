@@ -62,7 +62,8 @@ def lambda_handler(event, context):
                 "Pk": str(uuid),
                 "Sk": "Profile#User",
                 "created_at": current_date_time,
-                "name": name
+                "name": name,
+                "email":email
             }
         )
 

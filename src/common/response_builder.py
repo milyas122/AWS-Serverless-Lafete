@@ -3,10 +3,10 @@ import json
 
 
 response_headers = {
-    # 'Content-Type': 'application/json',
+    # 'Content-Type': 'contentType',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Origin': '*',  # Required for CORS support to work
-    'Access-Control-Allow-Credentials': True,  # Required for cookies, authorization headers with HTTPS
+    # 'Access-Control-Allow-Credentials': True,  # Required for cookies, authorization headers with HTTPS
     'Access-Control-Allow-Methods': 'GET,POST,PATCH,DELETE,OPTIONS, *'
 }
 
