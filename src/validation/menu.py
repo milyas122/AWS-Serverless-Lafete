@@ -23,8 +23,8 @@ class AddOnSchema(Schema):
     
 
 class MenuSchema(Schema):
-    menus = fields.List(fields.Nested(SingleMenuSchema), )
-    add_ons = fields.List(fields.Nested(AddOnSchema), required=True)
+    menus = fields.List(fields.Nested(SingleMenuSchema))
+    add_ons = fields.List(fields.Nested(AddOnSchema))
     
     class Meta:
         unknown = EXCLUDE

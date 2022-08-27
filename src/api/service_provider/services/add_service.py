@@ -6,14 +6,9 @@ from src.common import (
     response_builder, utils
 )
 import uuid
-
-# from src.common.response_builder import get_success_response, get_custom_error
-# from src.common import utils
-# from src.common.decorators import (
-#     validate_body
-# )
 from src.validation.services import (
-    HallSchema, MorqueeSchema, FarmHouseSchema
+    HallSchema, MorqueeSchema, FarmHouseSchema,
+    EventOrganizer, CateringSchema
 )
 from marshmallow import ValidationError
 
@@ -36,10 +31,18 @@ def lambda_handler(event, context):
             data = HallSchema().load(data)
             data["menus"] = []
             data["add_ons"] = []
+
         elif service_type == "Morquee":
             data = MorqueeSchema().load(data)
             data["menus"] = []
             data["add_ons"] = []
+
+        elif service_type == "Event Organizer":
+            data = EventOrganizer().load(data)
+
+        elif service_type == "Catering":
+            data = CateringSchema().load(data)   
+
         elif service_type == "Farm House":
             data = FarmHouseSchema().load(data)
 
@@ -75,4 +78,20 @@ def lambda_handler(event, context):
         )
     except ValidationError as e:
         return response_builder.CustomValidationErrors(e).get_error()
-    
+
+# {
+#     "name":"Noor Catering service",
+#     "about_service":"54e79bc2-600d-4dff-aafd-c4f8dcf4f260",
+#     "location":"Lahore",
+#     "state":"Lahore",
+#     "city":"Punjba",
+#     "services":[
+#     {
+#         "service":"Live Barbq",
+#         "about_service":"ilajs",
+#         "images":[
+#             "https://www.google.com/"
+#             ]
+#     }    
+#     ]
+# }
