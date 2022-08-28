@@ -92,6 +92,11 @@ completeProfileServiceProvider:
         path: service_provider/profile
         method: post
         cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: UserApiGatewayAuthorizer
+
           # origin: '*'
           # headers:
           #   - Content-Type
@@ -124,6 +129,10 @@ addService:
         path: services
         method: post
         cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: UserApiGatewayAuthorizer
           # origin: '*'
           # headers:
           #   - Content-Type
@@ -157,6 +166,10 @@ addMenuAddOns:
         path: services/{service_id}/menu_addOns
         method: post
         cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: UserApiGatewayAuthorizer
 
 addCateringService:
   handler: src/api/service_provider/services/add_catering_service.lambda_handler
@@ -180,3 +193,7 @@ addCateringService:
         path: services/{service_id}/cateringService
         method: post
         cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: UserApiGatewayAuthorizer

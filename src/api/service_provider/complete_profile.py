@@ -25,6 +25,20 @@ def lambda_handler(event, context):
     try:
         uuid = event["requestContext"]["authorizer"]['claims']['sub']
         email = event["requestContext"]["authorizer"]['claims']['email']
+        is_profile_completed = event["requestContext"]["authorizer"]['claims']['custom:is_profile_completed']
+        
+        if bool(is_profile_completed):
+            return get_success_response(
+                status_code=400, 
+                message='Bad Request',
+                data={
+                    "message": "Profile already completed "
+                }
+            )
+        
+        # uuid = "54e79bc2-600d-4dff-aafd-c4f8dcf4f260"
+        # email = "ammer@gmail.com"
+        
         business_name = data["business_name"]
         phone_no = data["phone_no"]
         landline_no = data.get("landline_no")

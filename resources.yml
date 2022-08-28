@@ -67,6 +67,12 @@ cognitoUserPoolClient:
   Type: AWS::Cognito::UserPoolClient
   Properties:
     ClientName: Web
+    RefreshTokenValidity: 30
+    IdTokenValidity: 1
+    AccessTokenValidity: 1
+    TokenValidityUnits:
+      AccessToken: "days"
+      IdToken: "days"
     UserPoolId: !Ref cognitoUserPool
     ExplicitAuthFlows:
       - ALLOW_USER_PASSWORD_AUTH
@@ -116,3 +122,15 @@ GatewayResponseDefault5XX:
     ResponseType: DEFAULT_5XX
     RestApiId:
       Ref: 'ApiGatewayRestApi'
+
+UserApiGatewayAuthorizer:
+  Type: AWS::ApiGateway::Authorizer
+  Properties:
+    Name: cognito-userPool-authorizer
+    IdentitySource: method.request.header.Authorization
+    Type: COGNITO_USER_POOLS
+    ProviderARNs:
+      - !GetAtt cognitoUserPool.Arn
+    RestApiId:
+      Ref: ApiGatewayRestApi
+        
