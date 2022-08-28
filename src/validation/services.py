@@ -40,6 +40,8 @@ class PortfolioSchema(Schema):
     about = fields.String() 
 
 class EventOrganizer(Schema):
+    service = fields.String(required=True, validate=validate.OneOf(["Event Organizer"]),
+                                error_messages={"invalid": "Invalid Service Type", "required":"Service is required field"})
     name = fields.String(required=True, error_messages={"required":"Name is required field"})
     about_service = fields.String(required=True, error_messages={"required":"About Service is reuqired field"})
     location = fields.String(required=True, error_messages={"required":"Location is required field"})
@@ -54,7 +56,7 @@ class CateringService(Schema):
     about_service = fields.String(required=True, error_messages={"required":"About service is reuqired field"})
 
 
-class CateringSchema(EventOrganizer):
+class CateringSchema(Schema):
     service = fields.String(required=True, validate=validate.OneOf(["Catering"]),
                                 error_messages={"invalid": "Invalid Service Type", "required":"Service is required field"})
     name = fields.String(required=True, error_messages={"required":"Name is required field"})
