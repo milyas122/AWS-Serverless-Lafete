@@ -46,8 +46,8 @@ def lambda_handler(event, context):
         elif service_type == "Farm House":
             data = FarmHouseSchema().load(data)
 
-        # service_provider_id = event["requestContext"]["authorizer"]['claims']['sub']
-        service_provider_id = "dc42638f-8a88-44a2-b124-96666ddbe6b2"
+        service_provider_id = event["requestContext"]["authorizer"]['claims']['sub']
+        # service_provider_id = "dc42638f-8a88-44a2-b124-96666ddbe6b2"
         
         data.pop("service") # Avoid data duplication
         
