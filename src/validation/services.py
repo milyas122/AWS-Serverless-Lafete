@@ -17,8 +17,16 @@ class ServicesSchema(Schema):
 
 class HallSchema(ServicesSchema):
     max_seating = fields.Integer(required=True, error_messages={"required":" Max Seating is required field"},strict=True)
-    evening_slot = fields.String(required=True, error_messages={"required":"Evening slot is required field"})
-    afternoon_slot = fields.String(required=True, error_messages={"required": "Afternoon slot is required field"})
+    slot = fields.List(
+                fields.String(
+                    required=True, 
+                    validate=validate.OneOf(["Evening(6PM-10PM)", "Afternoon(12PM-4PM)"]),
+                    error_messages={"required":"Slot is required field"}
+                    ), 
+                required=True,
+                validate=validate.Length(1,2),
+                error_messages={"invalid": "Invalid Service Type", "required":"Slot is required field"})
+
     per_head = fields.Integer(required=True, error_messages={"required":" Per head is required field"},strict=True)
 
 

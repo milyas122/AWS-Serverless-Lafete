@@ -32,12 +32,11 @@ def lambda_handler(event, context):
         # Data Validation
         if service_type == "Hall":
             data = HallSchema().load(data)
-            UpdateExpression = '''SET about_service = :v1, afternoon_slot = :v2, evening_slot = :v3, city = :v4, images = :v5, 
+            UpdateExpression = '''SET about_service = :v1, slot = :v2, city = :v4, images = :v5, 
                                     #l = :v6, max_seating = :v7, #n = :v8, per_head = :v9, #st = :v10, updated_at = :v11'''
             ExpressionAttributeValues = {
                 ":v1": data["about_service"],
-                ":v2": data["afternoon_slot"],
-                ":v3": data["evening_slot"],
+                ":v2": data["slot"],
                 ":v4": data["city"],
                 ":v5": data["images"],
                 ":v6": data["location"],
@@ -50,12 +49,11 @@ def lambda_handler(event, context):
 
         elif service_type == "Morquee":
             data = MorqueeSchema().load(data)
-            UpdateExpression = '''SET about_service = :v1, afternoon_slot = :v2, evening_slot = :v3, city = :v4, images = :v5, 
+            UpdateExpression = '''SET about_service = :v1, slot = :v2, city = :v4, images = :v5, 
                                     #l = :v6, max_seating = :v7, #n = :v8, per_head = :v9, #st = :v10, updated_at = :v11, decores = :v12'''
             ExpressionAttributeValues = {
                 ":v1": data["about_service"],
-                ":v2": data["afternoon_slot"],
-                ":v3": data["evening_slot"],
+                ":v2": data["slot"],
                 ":v4": data["city"],
                 ":v5": data["images"],
                 ":v6": data["location"],
