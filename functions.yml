@@ -26,18 +26,7 @@ signup:
         path: auth/signup
         method: post
         cors: true
-          # origin: '*'
-          # headers:
-          #   - Content-Type
-          #   - X-Amz-Date
-          #   - Authorization
-          #   - X-Api-Key
-          #   - X-Amz-Security-Token
-          #   - X-Amz-User-Agent
-          #   - X-Amzn-Trace-Id
-          # allowCredentials: false
-
-
+          
 login:
   handler: src/api/auth/login.lambda_handler
   layers:
@@ -133,17 +122,33 @@ addService:
           type: COGNITO_USER_POOLS
           authorizerId:
             Ref: UserApiGatewayAuthorizer
-          # origin: '*'
-          # headers:
-          #   - Content-Type
-          #   - X-Amz-Date
-          #   - Authorization
-          #   - X-Api-Key
-          #   - X-Amz-Security-Token
-          #   - X-Amz-User-Agent
-          #   - X-Amzn-Trace-Id
-          # allowCredentials: false
 
+editService:
+  handler: src/api/service_provider/services/edit_services.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/service_provider/services/edit_services.py
+      - ./src/validation/services.py
+  iamRoleStatementsName: editService-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:UpdateItem
+      Resource:
+        - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.SERVICES_DYNAMODB_TABLE}
+
+  events:
+    - http:
+        path: services/{service_id}
+        method: patch
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: UserApiGatewayAuthorizer
+ 
 addMenuAddOns:
   handler: src/api/service_provider/services/add_menu_addOns.lambda_handler
   layers:
