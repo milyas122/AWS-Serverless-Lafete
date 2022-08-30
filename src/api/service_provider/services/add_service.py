@@ -7,7 +7,7 @@ from src.common import (
 )
 import uuid
 from src.validation.services import (
-    HallSchema, MorqueeSchema, FarmHouseSchema,
+    HallSchema, MarqueeSchema, FarmHouseSchema,
     EventOrganizer, CateringSchema
 )
 from marshmallow import ValidationError
@@ -32,8 +32,8 @@ def lambda_handler(event, context):
             data["menus"] = []
             data["add_ons"] = []
 
-        elif service_type == "Morquee":
-            data = MorqueeSchema().load(data)
+        elif service_type == "Marquee":
+            data = MarqueeSchema().load(data)
             data["menus"] = []
             data["add_ons"] = []
 

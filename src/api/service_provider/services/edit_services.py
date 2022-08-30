@@ -47,7 +47,7 @@ def lambda_handler(event, context):
                 ":v11": utils.get_timeStamp()
             }
 
-        elif service_type == "Morquee":
+        elif service_type == "Marquee":
             data = MorqueeSchema().load(data)
             UpdateExpression = '''SET about_service = :v1, slot = :v2, city = :v4, images = :v5, 
                                     #l = :v6, max_seating = :v7, #n = :v8, per_head = :v9, #st = :v10, updated_at = :v11, decores = :v12'''

@@ -3,7 +3,7 @@ from marshmallow import Schema, fields, validate, EXCLUDE, post_load
 
 
 class ServicesSchema(Schema):
-    service = fields.String(required=True, validate=validate.OneOf(["Hall", "Catering", "Farm House", "Event Organizer", "Morquee"]),
+    service = fields.String(required=True, validate=validate.OneOf(["Hall", "Catering", "Farm House", "Event Organizer", "Marquee"]),
                                 error_messages={"invalid": "Invalid Service Type", "required":"Service is required field"})
     name = fields.String(required=True, error_messages={"required":"Name is required field"})
     location = fields.String(required=True, error_messages={"required":"Location is required field"})
@@ -30,7 +30,7 @@ class HallSchema(ServicesSchema):
     per_head = fields.Integer(required=True, error_messages={"required":" Per head is required field"},strict=True)
 
 
-class MorqueeSchema(HallSchema):
+class MarqueeSchema(HallSchema):
     decores = fields.List(fields.Url(),validate=validate.Length(1,10), required=True, error_messages={"required":"Decores images is required"})
 
 class FarmHouseSchema(ServicesSchema):
