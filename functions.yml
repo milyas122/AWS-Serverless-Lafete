@@ -41,16 +41,22 @@ login:
         path: auth/login
         method: post
         cors: True
-          # origin: '*'
-          # headers:
-          #   - Content-Type
-          #   - X-Amz-Date
-          #   - Authorization
-          #   - X-Api-Key
-          #   - X-Amz-Security-Token
-          #   - X-Amz-User-Agent
-          #   - X-Amzn-Trace-Id
-          # allowCredentials: false
+          
+
+refreshToken:
+  handler: src/api/auth/refresh_token.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/auth/refresh_token.py
+  iamRoleStatementsName: refreshToken-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+
+  events:
+    - http:
+        path: auth/token/refresh
+        method: post
+        cors: True
 
 # Service Provider Profile
 completeProfileServiceProvider:

@@ -3,7 +3,7 @@ import simplejson as json
 
 
 response_headers = {
-    # 'Content-Type': 'contentType',
+    'content-type': 'application/json',
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Origin': '*',  # Required for CORS support to work
     # 'Access-Control-Allow-Credentials': True,  # Required for cookies, authorization headers with HTTPS
@@ -12,6 +12,7 @@ response_headers = {
 
 def get_success_response(status_code=200, message='Success', data=None):
     return {
+        'isBase64Encoded': False,
         'statusCode': status_code,
         'headers': response_headers,
         'body': json.dumps({
@@ -24,6 +25,7 @@ def get_success_response(status_code=200, message='Success', data=None):
 
 def get_custom_error(status_code=400, message='Error', data=None):
     return {
+        'isBase64Encoded': False,
         'statusCode': status_code,
         'headers': response_headers,
         'body': json.dumps({
