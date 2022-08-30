@@ -17,9 +17,9 @@ SERVICES_TABLE = os.environ["SERVICES_TABLE"]
 service_table = dynamodb.Table(SERVICES_TABLE)
 
 def lambda_handler(event, context):
-    query_string_params: dict = event["queryStringParameters"]
-
-    service = query_string_params.get("service")
+    query_string_params: dict = event["queryStringParameters"] if event["queryStringParameters"] else {}
+    
+    service = query_string_params.get("service", "Hall")
     city = query_string_params.get('city')
     name = query_string_params.get('name')
     
