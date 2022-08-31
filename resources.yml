@@ -100,6 +100,16 @@ cognitoUserGroup:
     RoleArn: !GetAtt cognitoUserIAMRole.Arn
     UserPoolId: !Ref cognitoUserPool
 
+# Service Provider Group
+cognitoServiceProvidersGroup:
+  Type: AWS::Cognito::UserPoolGroup
+  Properties: 
+    Description: All service providers users are belong to this group
+    GroupName: ServiceProviders
+    Precedence: 1
+    RoleArn: !GetAtt cognitoServiceProviderIAMRole.Arn
+    UserPoolId: !Ref cognitoUserPool
+
 cognitoUserIAMRole:
   Type: AWS::IAM::Role
   Properties: 
@@ -114,6 +124,21 @@ cognitoUserIAMRole:
             - "sts:AssumeRole"
     Description: "IAM role for lafete user"
     RoleName: "lafete-user-role"
+  
+cognitoServiceProviderIAMRole:
+  Type: AWS::IAM::Role
+  Properties: 
+    AssumeRolePolicyDocument: 
+      Version: "2012-10-17"
+      Statement: 
+        - Effect: "Allow"
+          Principal:
+            Federated: 
+              - "cognito-identity.amazonaws.com"
+          Action:
+            - "sts:AssumeRole"
+    Description: "IAM role for lafete service providers users"
+    RoleName: "lafete-service-providers-role"
 
 GatewayResponseDefault4XX:
   Type: 'AWS::ApiGateway::GatewayResponse'

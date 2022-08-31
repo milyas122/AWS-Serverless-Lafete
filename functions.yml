@@ -78,6 +78,8 @@ completeProfileServiceProvider:
 
     - Effect: "Allow"
       Action:
+        - cognito-idp:AdminAddUserToGroup
+        - cognito-idp:AdminRemoveUserFromGroup
         - cognito-idp:AdminUpdateUserAttributes
       Resource:
         - !GetAtt cognitoUserPool.Arn

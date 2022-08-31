@@ -31,6 +31,7 @@ provider:
     USER_POOL_ID: !Ref cognitoUserPool
     USER_POOL_CLIENT_ID: !Ref cognitoUserPoolClient
     USER_POOL_GROUP: !Ref cognitoUserGroup
+    SERVICE_PROVIDER_GROUP: !Ref cognitoServiceProvidersGroup
 
 plugins:
   - serverless-iam-roles-per-function
