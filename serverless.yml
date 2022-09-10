@@ -26,6 +26,7 @@ provider:
   stage: ${opt:stage, self:custom.stage}
   region: us-east-1
   environment:
+    Aws_region: ${self:custom.settings.${self:provider.stage}.region}
     UploadBucket: ${self:custom.UploadBucket}
     USERS_TABLE: ${self:custom.settings.USERS_DYNAMODB_TABLE}
     SERVICES_TABLE: ${self:custom.settings.SERVICES_DYNAMODB_TABLE}

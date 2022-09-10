@@ -59,7 +59,7 @@ refreshToken:
         cors: True
 
 # Service Provider Profile
-completeProfileServiceProvider:
+CompleteProfileServiceProvider:
   handler: src/api/service_provider/complete_profile.lambda_handler
   layers:
     - Ref: PythonRequirementsLambdaLayer
@@ -67,7 +67,7 @@ completeProfileServiceProvider:
     patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
       - ./src/api/service_provider/complete_profile.py
       - ./src/validation/complete_profile.py
-  iamRoleStatementsName: completeProfileServiceProvider-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatementsName: CompleteProfileServiceProvider-v2-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -236,35 +236,35 @@ addCateringService:
           authorizerId:
             Ref: UserApiGatewayAuthorizer
 
-# imageUpload:
-#   handler: src/image_upload.lambda_handler
-#   layers:
-#     - Ref: PythonRequirementsLambdaLayer
-#   iamRoleStatementsName: imageUpload-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
-#   iamRoleStatements:
-#     - Effect: Allow
-#       Action:
-#         - s3:DeleteObject
-#         - s3:PutObject
-#       Resource: arn:aws:s3:::${self:custom.UploadBucket}*
-#     # - Effect: "Allow"
-#     #   Action:
-#     #     - dynamodb:GetItem
-#     #     - dynamodb:UpdateItem
-#     #   Resource:
-#     #     - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.USERS_DYNAMODB_TABLE}
-#   package:
-#     patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
-#       - ../src/image_upload/**
-#   events:
-#     - http:
-#         path: image-upload-api/type/{type}
-#         method: POST
-#         cors: true
-#         authorizer:
-#           type: COGNITO_USER_POOLS
-#           authorizerId:
-#             Ref: UserApiGatewayAuthorizer
-#         request:
-#           schemas:
-#             application/json: ${file(image.json)}
+imageUpload:
+  handler: src/api/image_upload.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  iamRoleStatementsName: imageUpload-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        # - s3:DeleteObject
+        - s3:PutObject
+      Resource: arn:aws:s3:::${self:custom.UploadBucket}*
+    # - Effect: "Allow"
+    #   Action:
+    #     - dynamodb:GetItem
+    #     - dynamodb:UpdateItem
+    #   Resource:
+    #     - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.USERS_DYNAMODB_TABLE}
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/image_upload.py
+  events:
+    - http:
+        path: upload/image
+        method: POST
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: UserApiGatewayAuthorizer
+        request:
+          schemas:
+            application/json: ${file(image.json)}
