@@ -183,12 +183,12 @@ getService:
         #     Ref: UserApiGatewayAuthorizer
 
 addMenuAddOns:
-  handler: src/api/service_provider/services/add_menu_addOns.lambda_handler
+  handler: src/api/service_provider/services/add-menu-addOns-v2.lambda_handler
   layers:
     - Ref: PythonRequirementsLambdaLayer
   package:
     patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
-      - ./src/api/service_provider/services/add_menu_addOns.py
+      - ./src/api/service_provider/services/add-menu-addOns-v2.py
       - ./src/validation/menu.py
   iamRoleStatementsName: addMenuAddOns-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
   iamRoleStatements:
@@ -201,7 +201,7 @@ addMenuAddOns:
 
   events:
     - http:
-        path: services/{service_id}/menu_addOns
+        path: services/{service_id}/{addition}
         method: post
         cors: true
         authorizer:
