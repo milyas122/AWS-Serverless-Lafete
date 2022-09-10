@@ -157,14 +157,14 @@ editService:
           authorizerId:
             Ref: UserApiGatewayAuthorizer
  
-getService:
+GetServices:
   handler: src/api/service_provider/services/get_services.lambda_handler
   layers:
     - Ref: PythonRequirementsLambdaLayer
   package:
     patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
       - ./src/api/service_provider/services/get_services.py
-  iamRoleStatementsName: getService-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatementsName: GetServices-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
   iamRoleStatements:
     - Effect: "Allow"
       Action:
@@ -175,6 +175,30 @@ getService:
   events:
     - http:
         path: services/
+        method: get
+        cors: true
+        # authorizer:
+        #   type: COGNITO_USER_POOLS
+        #   authorizerId:
+        #     Ref: UserApiGatewayAuthorizer
+
+GetServiceDetail:
+  handler: src/api/service_provider/services/get-service.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/service_provider/services/get-service.py
+  iamRoleStatementsName: GetServiceDetail-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:Query
+      Resource:
+        - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.SERVICES_DYNAMODB_TABLE}
+  events:
+    - http:
+        path: services/{service_id}
         method: get
         cors: true
         # authorizer:
