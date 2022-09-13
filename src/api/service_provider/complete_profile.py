@@ -25,11 +25,28 @@ def lambda_handler(event, context):
     try:
         uuid = event["requestContext"]["authorizer"]['claims']['sub']
         email = event["requestContext"]["authorizer"]['claims']['email']
+        is_profile_completed = event["requestContext"]["authorizer"]['claims']['custom:is_profile_completed']
+        
+
+        if is_profile_completed == "True":
+            return get_success_response(
+                status_code=400, 
+                message='Bad Request',
+                data={
+                    "message": "Profile already completed "
+                }
+            )
+        
+        # uuid = "54e79bc2-600d-4dff-aafd-c4f8dcf4f260"
+        # email = "ammer@gmail.com"
+        
         business_name = data["business_name"]
         phone_no = data["phone_no"]
         landline_no = data.get("landline_no")
 
         pool_id = os.environ["USER_POOL_ID"]
+        service_provider_group = os.environ["SERVICE_PROVIDER_GROUP"]
+        user_group = os.environ["USER_POOL_GROUP"]
 
         cognito_client.admin_update_user_attributes(
             UserPoolId = pool_id,
@@ -40,6 +57,19 @@ def lambda_handler(event, context):
                     'Value': 'True'
                 }
             ]
+        )
+
+        cognito_client.admin_remove_user_from_group(
+            UserPoolId = pool_id,
+            Username = email,
+            GroupName = user_group
+        )
+        
+        # Add user to service provider group
+        cognito_client.admin_add_user_to_group(
+            UserPoolId = pool_id,
+            Username = email,
+            GroupName = service_provider_group
         )
         updated_at = utils.get_timeStamp()
         user_object = user_table.delete_item(

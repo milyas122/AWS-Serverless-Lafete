@@ -19,25 +19,36 @@ UserTable:
     TableName: ${self:custom.settings.USERS_DYNAMODB_TABLE}
   
 ServiceTable:
-  Type: "AWS::DynamoDB::Table"
-  Properties: 
-    AttributeDefinitions: 
-      - AttributeName: "Pk"
-        AttributeType: "S"
-      - AttributeName: "Sk"
-        AttributeType: "S"
-    BillingMode: "PAY_PER_REQUEST"
-    KeySchema: 
-      - AttributeName: Pk
-        KeyType: "HASH"
-      - AttributeName: Sk
-        KeyType: "RANGE"
-    Tags: 
-      - Key: "Name"
-        Value: "service-table"
-    TableName: ${self:custom.settings.SERVICES_DYNAMODB_TABLE}
-
-# User Pool configurations
+    Type: "AWS::DynamoDB::Table"
+    Properties: 
+      AttributeDefinitions: 
+        - AttributeName: "Pk"
+          AttributeType: "S"
+        - AttributeName: "Sk"
+          AttributeType: "S"
+        - AttributeName: "city"
+          AttributeType: "S"
+      BillingMode: "PAY_PER_REQUEST"
+      KeySchema: 
+        - AttributeName: Pk
+          KeyType: "HASH"
+        - AttributeName: Sk
+          KeyType: "RANGE"
+      GlobalSecondaryIndexes:
+        - IndexName: service-city-index
+          KeySchema: 
+            - AttributeName: Sk
+              KeyType: "HASH"
+            - AttributeName: city
+              KeyType: "RANGE"
+          Projection:
+            NonKeyAttributes: [ ]
+            ProjectionType: ALL
+      Tags: 
+        - Key: "Name"
+          Value: "service-table"
+      TableName: ${self:custom.settings.SERVICES_DYNAMODB_TABLE}
+  # User Pool configurations
 cognitoUserPool:
   Type: AWS::Cognito::UserPool
   Properties: 
@@ -61,12 +72,17 @@ cognitoUserPool:
         Name: is_profile_completed
         Required: False 
 
-
 # User Pool client 
 cognitoUserPoolClient:
   Type: AWS::Cognito::UserPoolClient
   Properties:
     ClientName: Web
+    RefreshTokenValidity: 30
+    IdTokenValidity: 1
+    AccessTokenValidity: 1
+    TokenValidityUnits:
+      AccessToken: "days"
+      IdToken: "days"
     UserPoolId: !Ref cognitoUserPool
     ExplicitAuthFlows:
       - ALLOW_USER_PASSWORD_AUTH
@@ -80,6 +96,16 @@ cognitoUserGroup:
     GroupName: Users 
     Precedence: 1
     RoleArn: !GetAtt cognitoUserIAMRole.Arn
+    UserPoolId: !Ref cognitoUserPool
+
+# Service Provider Group
+cognitoServiceProvidersGroup:
+  Type: AWS::Cognito::UserPoolGroup
+  Properties: 
+    Description: All service providers users are belong to this group
+    GroupName: ServiceProviders
+    Precedence: 1
+    RoleArn: !GetAtt cognitoServiceProviderIAMRole.Arn
     UserPoolId: !Ref cognitoUserPool
 
 cognitoUserIAMRole:
@@ -96,6 +122,21 @@ cognitoUserIAMRole:
             - "sts:AssumeRole"
     Description: "IAM role for lafete user"
     RoleName: "lafete-user-role"
+  
+cognitoServiceProviderIAMRole:
+  Type: AWS::IAM::Role
+  Properties: 
+    AssumeRolePolicyDocument: 
+      Version: "2012-10-17"
+      Statement: 
+        - Effect: "Allow"
+          Principal:
+            Federated: 
+              - "cognito-identity.amazonaws.com"
+          Action:
+            - "sts:AssumeRole"
+    Description: "IAM role for lafete service providers users"
+    RoleName: "lafete-service-providers-role"
 
 GatewayResponseDefault4XX:
   Type: 'AWS::ApiGateway::GatewayResponse'
@@ -116,3 +157,72 @@ GatewayResponseDefault5XX:
     ResponseType: DEFAULT_5XX
     RestApiId:
       Ref: 'ApiGatewayRestApi'
+
+UserApiGatewayAuthorizer:
+  Type: AWS::ApiGateway::Authorizer
+  Properties:
+    Name: cognito-userPool-authorizer
+    IdentitySource: method.request.header.Authorization
+    Type: COGNITO_USER_POOLS
+    ProviderARNs:
+      - !GetAtt cognitoUserPool.Arn
+    RestApiId:
+      Ref: ApiGatewayRestApi
+
+ImageUploadBucket:
+  Type: AWS::S3::Bucket
+  Properties:
+    BucketName: ${self:custom.UploadBucket}
+    AccessControl: PublicRead
+
+imageBucketPolicy:
+  Type: 'AWS::S3::BucketPolicy'
+  Properties:
+    PolicyDocument:
+      Statement:
+        - Sid: PublicReadForGetBucketObjects
+          Effect: Allow
+          Principal: '*'
+          Action:
+            - 's3:GetObject'
+          Resource:
+            Fn::Join:
+              - ""
+              - - "arn:aws:s3:::"
+                - Ref: ImageUploadBucket
+                - "/*"
+    Bucket:
+      Ref: ImageUploadBucket
+
+imageBucket:
+  Type: "AWS::IAM::Role"
+  Properties:
+    RoleName: serverless-${self:custom.UploadBucket}
+    AssumeRolePolicyDocument:
+      Version: '2012-10-17'
+      Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+              - s3.amazonaws.com
+          Action:
+            - sts:AssumeRole
+    ManagedPolicyArns:
+      - arn:aws:iam::aws:policy/AmazonS3FullAccess
+    Policies:
+      - PolicyName: UploadObjects
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Sid: AllowPublicRead
+              Effect: Allow
+              Action:
+                - s3:PutObject
+                - s3:GetObject
+                - s3:PutObjectTagging
+              Resource:
+                Fn::Join:
+                  - ""
+                  - - "arn:aws:s3:::"
+                    - Ref: ImageUploadBucket
+                    - "/*"

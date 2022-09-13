@@ -1,0 +1,294 @@
+signup:
+  handler: src/api/auth/signup.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/auth/signup.py
+  iamRoleStatementsName: signup-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:PutItem
+      Resource:
+        - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.USERS_DYNAMODB_TABLE}
+
+    - Effect: "Allow"
+      Action:
+        - cognito-idp:AdminConfirmSignUp
+        - cognito-idp:AdminAddUserToGroup
+        - cognito-idp:AdminUpdateUserAttributes
+      Resource:
+        - !GetAtt cognitoUserPool.Arn
+
+  events:
+    - http:
+        path: auth/signup
+        method: post
+        cors: true
+          
+login:
+  handler: src/api/auth/login.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/auth/login.py
+  iamRoleStatementsName: login-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+
+  events:
+    - http:
+        path: auth/login
+        method: post
+        cors: True
+          
+
+refreshToken:
+  handler: src/api/auth/refresh_token.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/auth/refresh_token.py
+  iamRoleStatementsName: refreshToken-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+
+  events:
+    - http:
+        path: auth/token/refresh
+        method: post
+        cors: True
+
+# Service Provider Profile
+CompleteProfileServiceProvider:
+  handler: src/api/service_provider/complete_profile.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/service_provider/complete_profile.py
+      - ./src/validation/complete_profile.py
+  iamRoleStatementsName: CompleteProfileServiceProvider-v2-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:PutItem
+        - dynamodb:DeleteItem
+      Resource:
+        - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.USERS_DYNAMODB_TABLE}
+
+    - Effect: "Allow"
+      Action:
+        - cognito-idp:AdminAddUserToGroup
+        - cognito-idp:AdminRemoveUserFromGroup
+        - cognito-idp:AdminUpdateUserAttributes
+      Resource:
+        - !GetAtt cognitoUserPool.Arn
+
+  events:
+    - http:
+        path: service_provider/profile
+        method: post
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: UserApiGatewayAuthorizer
+
+          # origin: '*'
+          # headers:
+          #   - Content-Type
+          #   - X-Amz-Date
+          #   - Authorization
+          #   - X-Api-Key
+          #   - X-Amz-Security-Token
+          #   - X-Amz-User-Agent
+          #   - X-Amzn-Trace-Id
+          # allowCredentials: false
+# Services 
+addService:
+  handler: src/api/service_provider/services/add_service.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/service_provider/services/add_service.py
+      - ./src/validation/services.py
+  iamRoleStatementsName: addService-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:PutItem
+      Resource:
+        - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.SERVICES_DYNAMODB_TABLE}
+
+  events:
+    - http:
+        path: services
+        method: post
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: UserApiGatewayAuthorizer
+
+editService:
+  handler: src/api/service_provider/services/edit_services.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/service_provider/services/edit_services.py
+      - ./src/validation/services.py
+  iamRoleStatementsName: editService-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:UpdateItem
+      Resource:
+        - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.SERVICES_DYNAMODB_TABLE}
+
+  events:
+    - http:
+        path: services/{service_id}
+        method: patch
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: UserApiGatewayAuthorizer
+ 
+GetServices:
+  handler: src/api/service_provider/services/get_services.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/service_provider/services/get_services.py
+  iamRoleStatementsName: GetServices-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:Query
+      Resource:
+        - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.SERVICES_DYNAMODB_TABLE}/index/service-city-index
+
+  events:
+    - http:
+        path: services/
+        method: get
+        cors: true
+        # authorizer:
+        #   type: COGNITO_USER_POOLS
+        #   authorizerId:
+        #     Ref: UserApiGatewayAuthorizer
+
+GetServiceDetail:
+  handler: src/api/service_provider/services/get-service.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/service_provider/services/get-service.py
+  iamRoleStatementsName: GetServiceDetail-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:Query
+      Resource:
+        - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.SERVICES_DYNAMODB_TABLE}
+  events:
+    - http:
+        path: services/{service_id}
+        method: get
+        cors: true
+        # authorizer:
+        #   type: COGNITO_USER_POOLS
+        #   authorizerId:
+        #     Ref: UserApiGatewayAuthorizer
+
+addMenuAddOns:
+  handler: src/api/service_provider/services/add-menu-addOns-v2.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/service_provider/services/add-menu-addOns-v2.py
+      - ./src/validation/menu.py
+  iamRoleStatementsName: addMenuAddOns-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:Query
+        - dynamodb:UpdateItem
+      Resource:
+        - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.SERVICES_DYNAMODB_TABLE}
+
+  events:
+    - http:
+        path: services/{service_id}/{addition}
+        method: post
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: UserApiGatewayAuthorizer
+
+addCateringService:
+  handler: src/api/service_provider/services/add_catering_service.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/service_provider/services/add_catering_service.py
+      - ./src/validation/services.py
+  iamRoleStatementsName: addCateringService-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatements:
+    - Effect: "Allow"
+      Action:
+        - dynamodb:Query
+        - dynamodb:UpdateItem
+      Resource:
+        - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.SERVICES_DYNAMODB_TABLE}
+
+  events:
+    - http:
+        path: services/{service_id}/cateringService
+        method: post
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: UserApiGatewayAuthorizer
+
+imageUpload:
+  handler: src/api/image_upload.lambda_handler
+  layers:
+    - Ref: PythonRequirementsLambdaLayer
+  iamRoleStatementsName: imageUpload-policy-sls-${self:provider.region}-${self:custom.stage} #optional custom role name setting instead of the default generated one
+  iamRoleStatements:
+    - Effect: Allow
+      Action:
+        # - s3:DeleteObject
+        - s3:PutObject
+      Resource: arn:aws:s3:::${self:custom.UploadBucket}*
+    # - Effect: "Allow"
+    #   Action:
+    #     - dynamodb:GetItem
+    #     - dynamodb:UpdateItem
+    #   Resource:
+    #     - !Sub arn:aws:dynamodb:${self:provider.region}:${AWS::AccountId}:table/${self:custom.settings.USERS_DYNAMODB_TABLE}
+  package:
+    patterns: ## files to be included in lambda (Each lambda will have common files + it own handler + other file in its folder)
+      - ./src/api/image_upload.py
+  events:
+    - http:
+        path: upload/image
+        method: POST
+        cors: true
+        authorizer:
+          type: COGNITO_USER_POOLS
+          authorizerId:
+            Ref: UserApiGatewayAuthorizer
+        request:
+          schemas:
+            application/json: ${file(image.json)}

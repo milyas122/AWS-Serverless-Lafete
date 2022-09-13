@@ -26,27 +26,33 @@ provider:
   stage: ${opt:stage, self:custom.stage}
   region: us-east-1
   environment:
+    Aws_region: ${self:custom.settings.${self:provider.stage}.region}
+    UploadBucket: ${self:custom.UploadBucket}
     USERS_TABLE: ${self:custom.settings.USERS_DYNAMODB_TABLE}
     SERVICES_TABLE: ${self:custom.settings.SERVICES_DYNAMODB_TABLE}
     USER_POOL_ID: !Ref cognitoUserPool
     USER_POOL_CLIENT_ID: !Ref cognitoUserPoolClient
     USER_POOL_GROUP: !Ref cognitoUserGroup
+    SERVICE_PROVIDER_GROUP: !Ref cognitoServiceProvidersGroup
 
 plugins:
   - serverless-iam-roles-per-function
   - serverless-python-requirements
+  - serverless-apigw-binary
+
 
 custom:
 #  splitStacks:
 #    perFunction: true
-  # apigwBinary:
-  #   types: #list of mime-types
-  #     - 'image/jpeg'
-  #     - 'image/png'
+  apigwBinary:
+    types: #list of mime-types
+      - 'image/jpeg'
+      - 'image/png'
+
   pythonRequirements:
      layer: true
   stage: ${opt:stage, self:provider.stage}
-  # UploadBucket: eshaafi-image-upload-bucket-${self:provider.region}-${self:custom.stage}
+  UploadBucket: lafete-image-upload-bucket-${self:provider.region}-${self:custom.stage}
   settings:
     USERS_DYNAMODB_TABLE: Users-${self:custom.stage}
     SERVICES_DYNAMODB_TABLE: Services-${self:custom.stage}
@@ -68,13 +74,12 @@ package:
     - ./src/common/**
 
 functions:
-  ${file(functions.yml)}
+  ${file(lambda.yml)}
 
 # you can add CloudFormation resource templates here
 resources:
- Resources:
-   ${file(resources.yml)}
-#  Outputs:
-#     NewOutput:
-#       Description: "Description for the output"
-#       Value: "Some output value"
+  Resources:
+    ${file(resources.yml)}
+
+
+
