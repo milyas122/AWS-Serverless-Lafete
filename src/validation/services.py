@@ -16,26 +16,22 @@ class ServicesSchema(Schema):
         unknown = EXCLUDE
 
 class HallSchema(ServicesSchema):
-    max_seating = fields.Integer(required=True, error_messages={"required":" Max Seating is required field"},strict=True)
+    max_seating = fields.Integer(required=True, error_messages={"required":" Max Seating is required field"})
     slot = fields.List(
                 fields.String(
-                    required=True, 
-                    validate=validate.OneOf(["Evening(6PM-10PM)", "Afternoon(12PM-4PM)"]),
-                    error_messages={"required":"Slot is required field"}
                     ), 
                 required=True,
                 validate=validate.Length(1,2),
                 error_messages={"invalid": "Invalid Service Type", "required":"Slot is required field"})
 
-    per_head = fields.Integer(required=True, error_messages={"required":" Per head is required field"},strict=True)
+    per_head = fields.Integer(required=True, error_messages={"required":" Per head is required field"})
 
 
 class MarqueeSchema(HallSchema):
     decores = fields.List(fields.Url(),validate=validate.Length(1,10), required=True, error_messages={"required":"Decores images is required"})
 
 class FarmHouseSchema(ServicesSchema):
-    area = fields.String(required=True, error_messages={"required":"Area/Kanal is required field"})
-    per_hour_rate = fields.Integer(strict=True, required=True, error_messages={"required":"Per hour rate is required field"})
+    per_hour_rate = fields.Integer(required=True, error_messages={"required":"Per hour rate is required field"})
 
 # class RatingSchema(Schema):
 #     communication = fields.Integer(strict=True, require )

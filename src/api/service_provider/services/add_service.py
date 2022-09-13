@@ -3,13 +3,14 @@ import boto3
 import os
 from botocore.exceptions import ClientError
 from src.common import (
-    response_builder, utils
+    response_builder, utils, decorators
 )
 import uuid
 from src.validation.services import (
     HallSchema, MarqueeSchema, FarmHouseSchema,
-    EventOrganizer, CateringSchema
+    EventOrganizer, CateringSchema, ServicesSchema
 )
+
 from marshmallow import ValidationError
 
 
@@ -20,6 +21,7 @@ dynamodb = boto3.resource('dynamodb')
 SERVICES_TABLE = os.environ["SERVICES_TABLE"]
 service_table = dynamodb.Table(SERVICES_TABLE)
 
+@decorators.validate_body(Schema=ServicesSchema())
 def lambda_handler(event, context):
     data = json.loads(event["body"])
 
@@ -45,6 +47,7 @@ def lambda_handler(event, context):
 
         elif service_type == "Farm House":
             data = FarmHouseSchema().load(data)
+        
 
         service_provider_id = event["requestContext"]["authorizer"]['claims']['sub']
         # service_provider_id = "dc42638f-8a88-44a2-b124-96666ddbe6b2"
